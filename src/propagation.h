@@ -3,7 +3,9 @@
 
 enum ACTIVATION_FUNCTION
 {
-    SIGMOID
+    LINEAR,
+    SIGMOID,
+    TANH
 };
 
 double preactivation(std::vector<double> &x, std::vector<double> &w, double &b);
