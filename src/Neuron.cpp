@@ -22,10 +22,26 @@ Neuron::Neuron(double input_size)
     b = (double)0;
 }
 
-double Neuron::forward_prop(std::vector<double> x)
+std::vector<double> Neuron::getW() {
+    return w;
+}
+
+void Neuron::setW(std::vector<double> newW) {
+    w = newW;
+}
+
+double Neuron::getB() {
+    return b;
+}
+
+void Neuron::setB(double newB) {
+    b = newB;
+}
+
+double Neuron::forward_prop(std::vector<double> x, ACTIVATION_FUNCTION activation_function)
 {
     double a = preactivation(x, w, b);
-    double h = activation(a, ACTIVATION_FUNCTION::SIGMOID);
+    double h = activation(a, activation_function);
 
     return h;
 }
