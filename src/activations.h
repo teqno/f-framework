@@ -1,3 +1,3 @@
 #pragma once
 
-double sigmoid(double &a);
+double sigmoid(double a);

@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 
 #include "propagation.h"
 
@@ -10,10 +9,10 @@ private:
     double b;
 
 public:
-    Neuron(double input_size);
+    Neuron(int input_size);
     std::vector<double> getW();
     void setW(std::vector<double> newW);
-    double forward_prop(std::vector<double> x, ACTIVATION_FUNCTION activation_function);
     double getB();
     void setB(double newB);
+    double forward_prop(std::vector<double> &x, ACTIVATION_FUNCTION activation_function);
 };
