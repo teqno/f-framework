@@ -11,7 +11,7 @@ double preactivation(std::vector<double> &x, std::vector<double> &w, double b)
 
     for (std::vector<double>::size_type i = 0; i != x.size(); i++)
     {
-        xw += lambda(x[i], w[i]);
+        xw += lambda(x.at(i), w.at(i));
     }
 
     return xw + b;
