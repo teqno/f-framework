@@ -5,13 +5,11 @@
 
 double preactivation(std::vector<double> &x, std::vector<double> &w, double b)
 {
-    auto lambda = [&](double x, double w) { return x * w; };
-
     double xw = 0;
 
     for (std::vector<double>::size_type i = 0; i != x.size(); i++)
     {
-        xw += lambda(x.at(i), w.at(i));
+        xw += x.at(i) * w.at(i);
     }
 
     return xw + b;

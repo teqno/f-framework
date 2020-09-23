@@ -9,6 +9,8 @@
                 "${workspaceFolder}\\src\\*",
                 "-o",
                 "${workspaceFolder}\\build\\build.exe",
+                // "-I",
+                // "${workspaceFolder}\\libs\\boost",
                 "-std=c++17",
                 "-U__STRICT_ANSI__"
             ],
