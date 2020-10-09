@@ -13,5 +13,5 @@ public:
     std::vector<Layer *> getLayers();
     std::vector<double> forward_prop(std::vector<double> &input);
     double calc_loss(std::vector<std::vector<double>> &x, std::vector<double> &y);
-    // void Network::train(std::vector<std::vector<double>> &x, std::vector<double> &y, int epochs);
+    void train(std::vector<std::vector<double>> &x, std::vector<double> &y, int epochs);
 };

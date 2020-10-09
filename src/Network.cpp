@@ -1,5 +1,6 @@
 #include "Network.h"
 #include <iostream>
+#include <vector>
 
 Network::Network(std::vector<Layer *> &layers)
 {
@@ -35,26 +36,26 @@ double Network::calc_loss(std::vector<std::vector<double>> &x, std::vector<doubl
     return result / x.size();
 }
 
-// void Network::train(std::vector<std::vector<double>> &x, std::vector<double> &y, int epochs)
-// {
-//     for (int i = 0; i < epochs; i++)
-//     {
-//         for () {
-            
-//         }
-//         std:vector<double> a = forward_prop(x);
-//         for (int j = layers.size() - 1; j >= 0; j--)
-//         {
-//             std::vector<double> dz;
-//             std::vector<double> dw;
-//             std::vector<double> db;
-//             if (i == layers.size() - 1)
-//             {
-//                  layers.at(i)->forward_prop();
-//             }
-//         }
+void Network::train(std::vector<std::vector<double>> &x, std::vector<double> &y, int epochs)
+{
+    for (int i = 0; i < epochs; i++)
+    {
+        std::vector<std::vector<double>> activations;
+        for (int k = 0; k < x.size(); k++) {
+            activations.push_back(forward_prop(x.at(k)));
+        }
+        // for (int j = layers.size() - 1; j >= 0; j--)
+        // {
+        //     std::vector<double> dz;
+        //     std::vector<double> dw;
+        //     std::vector<double> db;
+        //     if (i == layers.size() - 1)
+        //     {
+        //          layers.at(i)->forward_prop();
+        //     }
+        // }
 
-//         double loss = calc_loss(x, y);
-//         std::cout << "Loss: " << loss << std::endl;
-//     }
-// }
+        double loss = calc_loss(x, y);
+        std::cout << "Loss: " << loss << std::endl;
+    }
+}
