@@ -12,22 +12,22 @@ static std::default_random_engine generator = initialize_random_seed();
 
 Neuron::Neuron(int input_size)
 {
-    w.reserve(input_size);
+    w.resize(input_size);
     std::normal_distribution<double> distribution(0, 0.2);
     for (int i = 0; i < input_size; i++)
     {
         double num = distribution(generator);
-        w.push_back(num);
+        w(i) = num;
     }
     b = 0;
 }
 
-std::vector<double> Neuron::getW()
+Eigen::VectorXd Neuron::getW()
 {
     return w;
 }
 
-void Neuron::setW(std::vector<double> newW)
+void Neuron::setW(Eigen::VectorXd newW)
 {
     w = newW;
 }
@@ -42,10 +42,20 @@ void Neuron::setB(double newB)
     b = newB;
 }
 
-double Neuron::forward_prop(std::vector<double> &x, ACTIVATION_FUNCTION activation_function)
+double Neuron::getZ()
 {
-    double a = preactivation(x, w, b);
-    double h = activation(a, activation_function);
+    return z;
+}
 
-    return h;
+void Neuron::setZ(double newZ)
+{
+    z = newZ;
+}
+
+double Neuron::forward_prop(Eigen::VectorXd &x, ACTIVATION_FUNCTION activation_function)
+{
+    z = preactivation(x, w, b);
+    double a = activation(z, activation_function);
+
+    return a;
 }

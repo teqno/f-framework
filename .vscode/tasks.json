@@ -5,12 +5,15 @@
             "label": "C/C++: g++.exe build active file",
             "command": "C:\\MinGW\\bin\\g++.exe",
             "args": [
+                // "--verbose",
+                "-I",
+                "${workspaceFolder}\\headers",
+                "-I",
+                "${workspaceFolder}\\libs",
                 "-g",
                 "${workspaceFolder}\\src\\*",
                 "-o",
                 "${workspaceFolder}\\build\\build.exe",
-                // "-I",
-                // "${workspaceFolder}\\libs\\boost",
                 "-std=c++17",
                 "-U__STRICT_ANSI__"
             ],

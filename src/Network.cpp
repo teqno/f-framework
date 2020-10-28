@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace Eigen;
+
 Network::Network(std::vector<Layer *> &layers)
 {
     this->layers = layers;
@@ -12,11 +14,11 @@ std::vector<Layer *> Network::getLayers()
     return layers;
 }
 
-std::vector<double> Network::forward_prop(std::vector<double> &input)
+Eigen::VectorXd Network::forward_prop(Eigen::VectorXd &input)
 {
-    std::vector<double> result = input;
+    Eigen::VectorXd result = input;
 
-    for (auto const &l : layers)
+    for (Layer* &l : layers)
     {
         result = l->forward_prop(result);
     }
@@ -24,38 +26,78 @@ std::vector<double> Network::forward_prop(std::vector<double> &input)
     return result;
 }
 
-double Network::calc_loss(std::vector<std::vector<double>> &x, std::vector<double> &y)
+double Network::calc_cost(Eigen::MatrixXd &x, Eigen::VectorXd &y)
 {
     double result = 0.0;
     for (int i = 0; i < x.size(); i++)
     {
-        std::vector<double> ai = forward_prop(x.at(i));
-        result += cross_entropy_loss(ai.at(0), y.at(i));
+        VectorXd trainingExample = x.row(i);
+        Eigen::VectorXd ai = forward_prop(trainingExample);
+        result += cross_entropy_loss(ai(0), y(i));
     }
 
-    return result / x.size();
+    return result / x.rows();
 }
 
-void Network::train(std::vector<std::vector<double>> &x, std::vector<double> &y, int epochs)
+void Network::train(Eigen::MatrixXd &x, Eigen::VectorXd &y, int epochs)
 {
     for (int i = 0; i < epochs; i++)
     {
-        std::vector<std::vector<double>> activations;
-        for (int k = 0; k < x.size(); k++) {
-            activations.push_back(forward_prop(x.at(k)));
-        }
-        // for (int j = layers.size() - 1; j >= 0; j--)
-        // {
-        //     std::vector<double> dz;
-        //     std::vector<double> dw;
-        //     std::vector<double> db;
-        //     if (i == layers.size() - 1)
-        //     {
-        //          layers.at(i)->forward_prop();
-        //     }
-        // }
+        int m = x.rows();
+        double J = 0;
 
-        double loss = calc_loss(x, y);
-        std::cout << "Loss: " << loss << std::endl;
+        for (int j = 0; j < m; j++) {
+            Eigen::VectorXd trainingExample = x.row(j);
+            Eigen::VectorXd predictions = forward_prop(trainingExample);
+
+            std::cout << "Training example " << j << std::endl;
+            std::cout << predictions.size() << std::endl;
+
+            double networkPrediction = predictions(0);
+            double expectedOutput = y(0);
+
+            double loss = cross_entropy_loss(networkPrediction, expectedOutput);
+
+            std::cout << "Loss: " << loss << std::endl;
+
+            for (int k = layers.size() - 1; k >= 0; k--) {
+                Layer* currentLayer = layers.at(k);
+                
+                std::vector<std::pair<Eigen::VectorXd, double>> nodesParams = currentLayer->getParams();
+
+                std::vector<double> dZ;
+
+                if (k == layers.size() - 1) {
+                    std::vector<Neuron *> neurons = currentLayer->getNeurons();
+                    
+                    std::cout << "This layer size should be 1: " << neurons.size() << std::endl;
+
+                    Neuron* outputNeuron = neurons.at(0);
+                    double z = outputNeuron->getZ();
+
+                    std::cout << "z value of output neuron: " << z << std::endl;
+
+                    dZ.push_back(networkPrediction - expectedOutput);
+                    break;
+                } else {
+                    std::vector<Neuron *> neurons = currentLayer->getNeurons();
+                    
+                    std::cout << "This layer size should be greater than 1: " << neurons.size() << std::endl;
+
+                    for (Neuron* n : neurons) {
+                        double z = n->getZ();
+                        // double dZi = 
+                    }
+                }
+
+
+            }
+
+            J += loss;
+        }
+
+        J /= m;
+
+        std::cout << "Average loss: " << J << std::endl;
     }
 }

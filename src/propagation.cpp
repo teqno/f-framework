@@ -3,13 +3,13 @@
 #include "propagation.h"
 #include "activations.h"
 
-double preactivation(std::vector<double> &x, std::vector<double> &w, double b)
+double preactivation(Eigen::VectorXd &x, Eigen::VectorXd &w, double b)
 {
     double xw = 0;
 
-    for (std::vector<double>::size_type i = 0; i != x.size(); i++)
+    for (int i = 0; i != x.size(); i++)
     {
-        xw += x.at(i) * w.at(i);
+        xw += x(i) * w(i);
     }
 
     return xw + b;

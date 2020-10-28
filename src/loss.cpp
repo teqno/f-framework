@@ -1,11 +1,11 @@
 #include "loss.h"
 
-double mse(std::vector<double> &x, std::vector<double> &y)
+double mse(Eigen::VectorXd &x, Eigen::VectorXd &y)
 {
     double sum_of_squares = 0;
     for (int i = 0; i < x.size(); i++)
     {
-        sum_of_squares += pow(x.at(i) - y.at(i), 2);
+        sum_of_squares += pow(x(i) - y(i), 2);
     }
     return 1.0 / (2 * x.size()) * sum_of_squares;
 }

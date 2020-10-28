@@ -3,8 +3,7 @@
         {
             "name": "Win64",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/libs/boost"
+                "${workspaceFolder}\\**"
             ],
             "defines": [
                 "_DEBUG",

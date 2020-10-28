@@ -60,6 +60,9 @@
         "fstream": "cpp",
         "sstream": "cpp",
         "map": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "dense": "cpp",
+        "complex": "cpp",
+        "list": "cpp"
     }
 }

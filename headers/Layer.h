@@ -12,6 +12,7 @@ private:
 
 public:
     Layer(int layer_size, int input_size, ACTIVATION_FUNCTION activation_function);
-    std::vector<double> forward_prop(std::vector<double> &x);
-    std::vector<std::pair<std::vector<double>, double>> getParams();
+    Eigen::VectorXd forward_prop(Eigen::VectorXd &x);
+    std::vector<std::pair<Eigen::VectorXd, double>> getParams();
+    std::vector<Neuron *> getNeurons();
 };

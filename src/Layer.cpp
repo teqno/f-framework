@@ -13,29 +13,33 @@ Layer::Layer(int layer_size, int input_size, ACTIVATION_FUNCTION activation_func
     }
 }
 
-std::vector<double> Layer::forward_prop(std::vector<double> &x)
+Eigen::VectorXd Layer::forward_prop(Eigen::VectorXd &x)
 {
-    std::vector<double> result;
-    result.reserve(layer_size);
+    Eigen::VectorXd result(layer_size);
 
-    for (auto const &n : neurons)
+    for (int i = 0; i < neurons.size(); i++)
     {
-        double neuron_activation = n->forward_prop(x, activation_function);
-        result.push_back(neuron_activation);
+        double neuron_activation = neurons.at(i)->forward_prop(x, activation_function);
+        result(i) = neuron_activation;
     }
 
     return result;
 }
 
-std::vector<std::pair<std::vector<double>, double>> Layer::getParams()
+std::vector<std::pair<Eigen::VectorXd, double>> Layer::getParams()
 {
-    std::vector<std::pair<std::vector<double>, double>> params;
+    std::vector<std::pair<Eigen::VectorXd, double>> params;
     params.reserve(layer_size);
 
-    for (auto const &n : neurons)
+    for (Neuron* n : neurons)
     {
         params.push_back(std::make_pair(n->getW(), n->getB()));
     }
 
     return params;
+}
+
+std::vector<Neuron *> Layer::getNeurons()
+{
+    return neurons;
 }
