@@ -2,8 +2,6 @@
 #include <iostream>
 #include <vector>
 
-using namespace Eigen;
-
 Network::Network(std::vector<Layer *> &layers)
 {
     this->layers = layers;
@@ -31,7 +29,7 @@ double Network::calc_cost(Eigen::MatrixXd &x, Eigen::VectorXd &y)
     double result = 0.0;
     for (int i = 0; i < x.size(); i++)
     {
-        VectorXd trainingExample = x.row(i);
+        Eigen::VectorXd trainingExample = x.row(i);
         Eigen::VectorXd ai = forward_prop(trainingExample);
         result += cross_entropy_loss(ai(0), y(i));
     }

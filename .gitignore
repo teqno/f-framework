@@ -1,1 +1,3 @@
 libs/**
+build/**
+examples/build/**
