@@ -14,12 +14,17 @@ Neuron::Neuron(int input_size)
 {
     parameters.w.resize(input_size);
     
-    std::normal_distribution<double> distribution(0, 0.2);
+    std::normal_distribution<double> distribution(0, 1);
     for (int i = 0; i < input_size; i++)
     {
         parameters.w(i) = distribution(generator);
     }
     parameters.b = 0;
+}
+
+HyperParameters Neuron::getParameters()
+{
+    return parameters;
 }
 
 Eigen::VectorXd Neuron::getW()

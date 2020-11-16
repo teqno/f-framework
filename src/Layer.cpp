@@ -26,14 +26,14 @@ Eigen::VectorXd Layer::forward_prop(Eigen::VectorXd &x)
     return result;
 }
 
-std::vector<std::pair<Eigen::VectorXd, double>> Layer::getParams()
+std::vector<HyperParameters> Layer::getParams()
 {
-    std::vector<std::pair<Eigen::VectorXd, double>> params;
+    std::vector<HyperParameters> params;
     params.reserve(layer_size);
 
     for (Neuron* n : neurons)
     {
-        params.push_back(std::make_pair(n->getW(), n->getB()));
+        params.push_back(n->getParameters());
     }
 
     return params;

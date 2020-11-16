@@ -11,6 +11,7 @@ private:
 
 public:
     Neuron(int input_size);
+    HyperParameters getParameters();
     Eigen::VectorXd getW();
     void setW(Eigen::VectorXd newW);
     double getB();
