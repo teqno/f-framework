@@ -5,14 +5,6 @@
 
 double preactivation(Eigen::VectorXd &x, Eigen::VectorXd &w, double b)
 {
-    // double xw = 0;
-    // xw = x.dot(w.transpose()) + b;
-
-    // for (int i = 0; i != x.size(); i++)
-    // {
-    //     xw += x(i) * w(i);
-    // }
-
     return x.dot(w.transpose()) + b;
 }
 

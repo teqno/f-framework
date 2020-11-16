@@ -2,12 +2,8 @@
 
 double mse(Eigen::VectorXd &x, Eigen::VectorXd &y)
 {
-    double sum_of_squares = 0;
-    for (int i = 0; i < x.size(); i++)
-    {
-        sum_of_squares += pow(x(i) - y(i), 2);
-    }
-    return 1.0 / (2 * x.size()) * sum_of_squares;
+    Eigen::VectorXd squaredDifference = (x - y).array().pow(2);
+    return squaredDifference.sum();
 }
 
 double cross_entropy_loss(double a, double y)
