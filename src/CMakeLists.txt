@@ -9,8 +9,6 @@ add_library(f-framework-lib STATIC
     random.cpp
 )
 
-set_target_properties(f-framework-lib PROPERTIES PUBLIC_HEADER include/f-framework.h)
-
 target_include_directories(f-framework-lib
     PUBLIC ${PROJECT_SOURCE_DIR}/headers
     PUBLIC ${PROJECT_SOURCE_DIR}/libs

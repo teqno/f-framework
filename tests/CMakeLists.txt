@@ -7,7 +7,7 @@ find_package(Catch2 REQUIRED PATHS "${PROJECT_SOURCE_DIR}/libs/Catch2")
 include(ParseAndAddCatchTests)
 
 add_library(testsMainLib STATIC testsMain.cpp)
-target_include_directories(testsMainLib PRIVATE ${CATCH_INCLUDE_DIR})
+target_include_directories(testsMainLib PUBLIC ${CATCH_INCLUDE_DIR})
 
 foreach(testSrc ${TEST_SRCS})
     get_filename_component(testName ${testSrc} NAME_WE)
@@ -15,7 +15,6 @@ foreach(testSrc ${TEST_SRCS})
     add_executable(${testName} ${testSrc})
 
     target_link_libraries(${testName} f-framework-lib testsMainLib)   
-    target_include_directories(${testName} PRIVATE ${CATCH_INCLUDE_DIR})
 
     ParseAndAddCatchTests(${testName})
 endforeach(testSrc)
