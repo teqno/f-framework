@@ -4,7 +4,7 @@
       "type": "shell",
       "label": "cmake",
       "command": "cmake",
-      "args": ["-B", "build/", "-S", "."],
+      "args": ["-G", "MinGW Makefiles", "-B", "build/", "-S", "."],
       "group": "build"
     },
     {
@@ -13,12 +13,30 @@
       "command": "make",
       "args": ["-C", "build/"],
       "problemMatcher": ["$gcc"],
+      "group": "build",
+      "dependsOn": ["cmake"]
+    },
+    // {
+    //   "type": "shell",
+    //   "label": "make check",
+    //   "command": "make check",
+    //   "args": ["-C", "build/"],
+    //   "problemMatcher": ["$gcc"],
+    //   "group": "build",
+    //   "dependsOn": ["make"]
+    // },
+    {
+      "type": "shell",
+      "label": "Build and Test",
+      "command": "make test",
+      "args": ["-C", "build/"],
+      "problemMatcher": ["$gcc"],
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "dependsOn": ["cmake"]
-    }
+      "dependsOn": ["make"]
+    },
   ],
   "version": "2.0.0"
 }
