@@ -27,21 +27,17 @@
 
 int main()
 {
-    Eigen::MatrixXd m1(1, 3);
-    m1 << 1, 2, 3;
+    // Each training example contains 5 features
+    // There are 3 training examples in total
+    Eigen::MatrixXd x(3, 5);
+    x << 1.0, 2.0, 3.0, 4.0, 5.0, 
+        6.0, 7.0, 8.0, 9.0, 10.0,
+        6.0, 7.0, 8.0, 9.0, 10.0;
 
-    Eigen::MatrixXd m2(1, 3);
-    m2 << 1, 2, 3;
-
-    std::cout << m1 * m2.transpose() << std::endl;
-
-    Eigen::MatrixXd x(3, 3);
-    x << 1.0, 2.0, 3.0,
-        4.0, 5.0, 6.0,
-        7.0, 8.0, 9.0;
-
+    // Each element is expected value of the output of the neural network
+    // for the corresponding training example
     Eigen::VectorXd y(3);
-    y << 1, 2, 3;
+    y << 1, 0, 1;
 
     Layer *l1 = new Layer(3, 5, ACTIVATION_FUNCTION::TANH);
     Layer *l2 = new Layer(5, 3, ACTIVATION_FUNCTION::TANH);
@@ -52,7 +48,9 @@ int main()
 
     Network *nn = new Network(layers);
 
-    nn->train(x, y, 1);
+    double cost = nn->calc_cost(x, y);
+
+    std::cout << cost << std::endl;
 
 #ifdef TEST1
     // std::vector<double> acts = nn->forward_prop(x);
