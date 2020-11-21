@@ -1,8 +1,10 @@
 #pragma once
 
+#include <map>
 #include "propagation.h"
 #include "HyperParameters.h"
 #include "Eigen/Dense"
+
 
 class Neuron
 {
@@ -16,5 +18,5 @@ public:
     void setW(Eigen::VectorXd newW);
     double getB();
     void setB(double newB);
-    double forward_prop(Eigen::VectorXd &x, ACTIVATION_FUNCTION activation_function);
+    std::map<std::string, double> forward_prop(Eigen::VectorXd &x, ACTIVATION_FUNCTION activation_function);
 };

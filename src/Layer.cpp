@@ -1,4 +1,5 @@
 #include "Layer.h"
+#include <iostream>
 
 Layer::Layer(int layer_size, int input_size, ACTIVATION_FUNCTION activation_function)
 {
@@ -13,30 +14,34 @@ Layer::Layer(int layer_size, int input_size, ACTIVATION_FUNCTION activation_func
     }
 }
 
-Eigen::VectorXd Layer::forward_prop(Eigen::VectorXd &x)
+std::map<std::string, Eigen::VectorXd> Layer::forward_prop(Eigen::VectorXd &x)
 {
-    Eigen::VectorXd result(layer_size);
+    Eigen::VectorXd preactivations(neurons.size());
+    Eigen::VectorXd activations(neurons.size());
 
     for (int i = 0; i < neurons.size(); i++)
     {
-        double neuron_activation = neurons.at(i)->forward_prop(x, activation_function);
-        result(i) = neuron_activation;
+        std::map<std::string, double> neuron_activation = neurons.at(i)->forward_prop(x, activation_function);
+        preactivations(i) = neuron_activation["z"];
+        activations(i) = neuron_activation["a"];
     }
 
-    return result;
+    return {{"preactivations", preactivations}, {"activations", activations}};
 }
 
-std::vector<HyperParameters> Layer::getParams()
+std::map<std::string, Eigen::MatrixXd> Layer::getParams()
 {
-    std::vector<HyperParameters> params;
-    params.reserve(layer_size);
+    Eigen::MatrixXd w(neurons.size(), neurons.at(0)->getW().size());
+    Eigen::VectorXd b(neurons.size());
 
-    for (Neuron* n : neurons)
+    for (int i = 0; i < neurons.size(); i++)
     {
-        params.push_back(n->getParameters());
+        HyperParameters parameters = neurons.at(i)->getParameters();
+        w.row(i) = parameters.w;
+        b(i) = parameters.b;
     }
 
-    return params;
+    return {{"w", w}, {"b", b}};
 }
 
 std::vector<Neuron *> Layer::getNeurons()
