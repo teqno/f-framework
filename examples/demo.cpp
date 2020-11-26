@@ -18,27 +18,29 @@ int main()
     // Each element is expected value of the output of the neural network
     // for the corresponding training example
     Eigen::MatrixXd y(10, 1);
-    y << x.array() * 2;
+    y << x.array().pow(2);
 
-    #define NET_TEST
-    #ifdef NET_TEST
+#define NET_TEST
+#ifdef NET_TEST
 
-    Layer *l1 = new Layer(1, 1, ACTIVATION_FUNCTION::LINEAR);
-    
-    std::vector<Layer *> layers = {l1};
+    Layer *l1 = new Layer(10, 1, ACTIVATION_FUNCTION::SIGMOID);
+    Layer *l2 = new Layer(20, 10, ACTIVATION_FUNCTION::SIGMOID);
+    Layer *l3 = new Layer(1, 20, ACTIVATION_FUNCTION::LINEAR);
+
+    std::vector<Layer *> layers = {l1, l2, l3};
 
     Network *nn = new Network(layers);
 
-    nn->train(x, y, 1000, 0.005);
+    nn->train(x, y, 1000000, 0.1);
 
-    Eigen::VectorXd input(1);
-    input << 23;
+    Eigen::MatrixXd input(1, 1);
+    input << 12;
 
     Eigen::VectorXd result = nn->forward_prop(input);
 
     std::cout << "result: " << result;
 
-    #endif
+#endif
 
     system("pause");
 

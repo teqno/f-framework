@@ -4,8 +4,8 @@
 
 double sigmoid(double a);
 
-Eigen::VectorXd sigmoid(Eigen::VectorXd a);
+Eigen::MatrixXd sigmoid(Eigen::MatrixXd a);
 
-Eigen::VectorXd sigmoid_prime(Eigen::VectorXd z);
+Eigen::MatrixXd sigmoid_prime(Eigen::MatrixXd z);
 
-Eigen::VectorXd tanh_prime(Eigen::VectorXd z);
+Eigen::MatrixXd tanh_prime(Eigen::MatrixXd z);

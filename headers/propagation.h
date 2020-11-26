@@ -11,6 +11,6 @@ enum ACTIVATION_FUNCTION
 
 double preactivation(Eigen::VectorXd &x, Eigen::VectorXd &w, double b);
 
-double activation(double a, ACTIVATION_FUNCTION activation_function);
+Eigen::MatrixXd activation(Eigen::MatrixXd z, ACTIVATION_FUNCTION activation_function);
 
-Eigen::VectorXd activation_prime(Eigen::VectorXd z, ACTIVATION_FUNCTION activation_function);
+Eigen::MatrixXd activation_prime(Eigen::MatrixXd z, ACTIVATION_FUNCTION activation_function);

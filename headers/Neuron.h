@@ -18,5 +18,4 @@ public:
     void setW(Eigen::VectorXd newW);
     double getB();
     void setB(double newB);
-    std::map<std::string, double> forward_prop(Eigen::VectorXd &x, ACTIVATION_FUNCTION activation_function);
 };

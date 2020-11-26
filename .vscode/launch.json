@@ -8,7 +8,7 @@
             "name": "g++.exe - Build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\build\\examples\\demo",
+            "program": "${workspaceFolder}\\build\\examples\\demo.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -16,6 +16,7 @@
             "externalConsole": true,
             "MIMode": "gdb",
             "miDebuggerPath": "D:\\MinGW\\mingw64\\bin\\gdb.exe",
+            "targetArchitecture": "x64",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

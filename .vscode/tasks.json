@@ -4,16 +4,32 @@
       "type": "shell",
       "label": "cmake",
       "command": "cmake",
-      "args": ["-G", "MinGW Makefiles", "-B", "build/", "-S", "."],
+      "args": [
+        "-G",
+        "Ninja",
+        "-D",
+        "CMAKE_C_COMPILER=gcc",
+        "-D",
+        "CMAKE_CXX_COMPILER=g++",
+        "-D",
+        "CMAKE_BUILD_TYPE=Debug",
+        "-B",
+        "build/",
+        "-S",
+        "."
+      ],
       "group": "build"
     },
     {
       "type": "shell",
       "label": "make",
-      "command": "make",
+      "command": "ninja",
       "args": ["-C", "build/"],
       "problemMatcher": ["$gcc"],
-      "group": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "dependsOn": ["cmake"]
     },
     // {
@@ -36,7 +52,7 @@
         "isDefault": true
       },
       "dependsOn": ["make"]
-    },
+    }
   ],
   "version": "2.0.0"
 }
