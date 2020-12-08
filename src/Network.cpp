@@ -2,11 +2,12 @@
 #include "activations.h"
 #include <iostream>
 #include <vector>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 
 Network::Network(std::vector<Layer *> &layers)
 {
-    srand((unsigned)time(NULL));
+    std::srand(std::time(nullptr));
     this->layers = layers;
 }
 
@@ -15,15 +16,15 @@ std::vector<Layer *> Network::getLayers()
     return layers;
 }
 
-Eigen::MatrixXd Network::forward_prop(Eigen::MatrixXd &input)
+Eigen::MatrixXd Network::forward_prop(const Eigen::MatrixXd &input)
 {
-    activations = std::vector<Eigen::MatrixXd>();
-    preactivations = std::vector<Eigen::MatrixXd>();
+    activations = std::vector<Eigen::VectorXd>();
+    preactivations = std::vector<Eigen::VectorXd>();
 
-    activations.reserve(layers.size());
+    activations.reserve(layers.size() + 1);
     preactivations.reserve(layers.size());
 
-    Eigen::MatrixXd activation = input.transpose();
+    Eigen::MatrixXd activation = input.transpose(); // (3, 1)
 
     activations.push_back(activation);
 
@@ -38,12 +39,12 @@ Eigen::MatrixXd Network::forward_prop(Eigen::MatrixXd &input)
         activations.push_back(activation);
     }
 
-    return activation.transpose();
+    return activation;
 }
 
 std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> Network::back_prop(Eigen::MatrixXd y)
 {
-    std::vector<Eigen::MatrixXd> dz;
+    std::vector<Eigen::VectorXd> dz;
     std::vector<Eigen::MatrixXd> dw;
     std::vector<Eigen::MatrixXd> db;
 
@@ -51,16 +52,15 @@ std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> Network::b
     dw.reserve(layers.size());
     db.reserve(layers.size());
 
-    auto current_da = mse_prime(activations.back(), y.transpose());
+    Eigen::VectorXd current_da = mse_prime(activations.back(), y.transpose());
+    Eigen::VectorXd current_dz = current_da.array() * activation_prime(preactivations.back(), layers.back()->activation_function).array();
+    Eigen::MatrixXd current_dw = (Eigen::MatrixXd::Ones(current_dz.size(), activations.rbegin()[1].transpose().size()).array().colwise() * current_dz.array()).array() * (Eigen::MatrixXd::Ones(current_dz.size(), activations.rbegin()[1].transpose().size()).array().rowwise() * activations.rbegin()[1].transpose().array()).array();
+    Eigen::MatrixXd current_db = current_dz;
 
-    Eigen::MatrixXd current_dz = current_da.array() * activation_prime(preactivations.back(), layers.back()->activation_function).array();
-    Eigen::MatrixXd current_dw = 1.0 / current_dz.cols() * current_dz * activations.rbegin()[1].transpose();
-    Eigen::MatrixXd current_db = 1.0 / current_dz.cols() * current_dz.rowwise().sum();
-
-    // std::cout << "da" << current_da << std::endl;
-    // std::cout << "dz" << current_dz << std::endl;
-    // std::cout << "dw" << current_dw << std::endl;
-    // std::cout << "db" << current_db << std::endl;
+    // std::cout << current_da << "--------------dA\n";
+    // std::cout << current_dz << "--------------dZ\n";
+    // std::cout << current_dw << "--------------dW\n";
+    // std::cout << current_db << "--------------dB\n";
 
     dz.push_back(current_dz);
     dw.push_back(current_dw);
@@ -69,27 +69,34 @@ std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> Network::b
     for (int i = layers.size() - 2; i >= 0; i--)
     {
         Eigen::MatrixXd w_prev = layers.at(i + 1)->getParams()["w"];
-        Eigen::MatrixXd z = preactivations.at(i);
-        Eigen::MatrixXd a_next = activations.at(i);
+        Eigen::VectorXd z = preactivations.at(i);
+        Eigen::VectorXd a_next = activations.at(i);
 
         Layer *current_layer = layers.at(i);
 
-        Eigen::MatrixXd current_dz = (w_prev * dz[layers.size() - 2 - i]).array() * activation_prime(z, current_layer->activation_function).array();
-        Eigen::MatrixXd current_dw = 1 / current_dz.cols() * current_dz * a_next.transpose();
-        Eigen::MatrixXd current_db = 1 / current_dz.cols() * current_dz.rowwise().sum();
+        Eigen::MatrixXd temp1 = w_prev.array().colwise() * current_dz.array();
+        Eigen::MatrixXd temp2 = temp1.colwise().sum();
+        Eigen::MatrixXd temp3 = temp2.transpose().array() * activation_prime(z, current_layer->activation_function).array();
+        current_dz = temp3;
+        current_dw = (Eigen::MatrixXd::Ones(current_dz.size(), a_next.rows()).array().rowwise() * a_next.transpose().array()).array().colwise() * current_dz.array();
+        current_db = current_dz;
 
-        // dz.at(i) = (w_prev.transpose() * dz.at(i + 1)).cwiseProduct(activation_prime(z, layers.at(i)->activation_function));
+        // std::cout << temp1 << "--------------dZ1\n";
+        // std::cout << temp2 << "--------------dZ2\n";
+        // std::cout << temp3 << "--------------dZ3\n";
+        // std::cout << current_dz << "--------------dZ\n";
+        // std::cout << current_dw << "--------------dW\n";
+        // std::cout << current_db << "--------------dB\n";
+
         dz.push_back(current_dz);
-        // dw.at(i) = dz.at(i) * a_next.transpose();
         dw.push_back(current_dw);
-        // db.at(i) = dz.at(i);
         db.push_back(current_db);
     }
 
     return std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>>(dw, db);
 }
 
-void Network::updateParameters(std::vector<Eigen::MatrixXd> dw, std::vector<Eigen::MatrixXd> db, double alpha)
+void Network::updateParameters(std::vector<Eigen::MatrixXd> dw, std::vector<Eigen::MatrixXd> db, double alpha, double alphaMomentum = 1)
 {
     for (int i = 0; i < layers.size(); i++)
     {
@@ -102,8 +109,10 @@ void Network::updateParameters(std::vector<Eigen::MatrixXd> dw, std::vector<Eige
             Eigen::VectorXd w = neuron->getW();
             double b = neuron->getB();
 
-            w = w.array() - alpha * dw.rbegin()[i].row(j).transpose().array();
-            b = b - alpha * db.rbegin()[i].row(j)(0);
+            Eigen::VectorXd momentumGradient = ;
+
+            w = w.array() + std::pow(alphaMomentum, i) * alpha * dw.rbegin()[i].row(j).transpose().array();
+            b = b + std::pow(alphaMomentum, i) * alpha * db.rbegin()[i].row(j)(0);
 
             neuron->setW(w);
             neuron->setB(b);
@@ -111,35 +120,40 @@ void Network::updateParameters(std::vector<Eigen::MatrixXd> dw, std::vector<Eige
     }
 }
 
-double Network::calc_cost(Eigen::MatrixXd &x, Eigen::MatrixXd &y)
+double Network::calc_cost(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y)
 {
     Eigen::MatrixXd activation = forward_prop(x);
-    double result = mse(activation, y);
+    double result = mse(activation, y.transpose());
 
     return result / y.size();
 }
 
-void Network::train(Eigen::MatrixXd &x, Eigen::MatrixXd &y, int epochs, double alpha)
+Eigen::VectorXd Network::train(Eigen::MatrixXd &x, Eigen::MatrixXd &y, int epochs, double alpha, double alphaMomentum = 1.0)
 {
-    // repeat for n epochs:
-    // activation <- forward_prop
-    // cost <- calc_cost
-    // delta_ws, delta_bs for all layers <- back_prop
-    // void <- update_parameters
+    Network::retainedGradient = Eigen::MatrixXd::Zero(layers.at(0)->getNeurons().size(), x.row(0).size());
+    Eigen::VectorXd lossCache(epochs);
 
     for (int i = 0; i < epochs; i++)
     {
-        if (i % 1000 == 0)
+        double cost = 0;
+
+        for (int j = 0; j < x.rows(); j++)
         {
-            double cost = calc_cost(x, y);
-            std::cout << "Epoch " << i << ": " << cost << std::endl;
+            cost += calc_cost(x.row(j), y.row(j));
+            // forward_prop(x.row(j));
+            auto deltas = back_prop(y.row(j));
+            updateParameters(deltas.first, deltas.second, alpha, alphaMomentum);
         }
 
-        forward_prop(x);
-        auto deltas = back_prop(y);
-        updateParameters(deltas.first, deltas.second, alpha);
+        lossCache(i) = cost;
+
+        if (i % 1000 == 0)
+        {
+            std::cout << "Epoch " << i << ": " << cost << std::endl;
+        }
     }
 
-    double cost = calc_cost(x, y);
-    std::cout << "Epoch " << epochs << ": " << cost << std::endl;
+    std::cout << "Epoch " << epochs << ": " << lossCache(epochs - 1) << std::endl;
+
+    return lossCache;
 }

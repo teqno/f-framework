@@ -20,7 +20,7 @@ Neuron::Neuron(int input_size)
     for (int i = 0; i < input_size; i++)
     {
         // parameters.w(i) = distribution(generator);
-        parameters.w(i) = ((double)rand()) / RAND_MAX;
+        parameters.w(i) = ((double)std::rand()) / RAND_MAX;
     }
 
     parameters.b = 0;

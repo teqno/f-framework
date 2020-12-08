@@ -8,7 +8,7 @@ double preactivation(Eigen::VectorXd &x, Eigen::VectorXd &w, double b)
     return x.dot(w.transpose()) + b;
 }
 
-Eigen::MatrixXd activation(Eigen::MatrixXd z, ACTIVATION_FUNCTION activation_function)
+Eigen::MatrixXd activation(const Eigen::MatrixXd &z, ACTIVATION_FUNCTION activation_function)
 {
     switch (activation_function)
     {

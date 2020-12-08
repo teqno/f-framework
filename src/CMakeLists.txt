@@ -14,6 +14,12 @@ target_include_directories(f-framework-lib
     PUBLIC ${PROJECT_SOURCE_DIR}/libs
 )
 
+target_precompile_headers(f-framework-lib
+    PUBLIC ${PROJECT_SOURCE_DIR}/libs/Eigen/Dense
+)
+
+set_target_properties(f-framework-lib PROPERTIES UNITY_BUILD ON)
+
 set_target_properties(f-framework-lib PROPERTIES PUBLIC_HEADER include/f-framework.h)
 
 include(GNUInstallDirs)

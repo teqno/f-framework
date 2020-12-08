@@ -4,7 +4,7 @@
 #include <math.h>
 #include "Eigen/Dense"
 
-double mse(Eigen::MatrixXd &y_hat, Eigen::MatrixXd &y);
+double mse(const Eigen::MatrixXd &y_hat, const Eigen::MatrixXd &y);
 
 double cross_entropy_loss(double a, double y);
 
