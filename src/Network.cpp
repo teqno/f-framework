@@ -5,9 +5,9 @@
 #include <cstdlib>
 #include <ctime>
 
-Network::Network(std::vector<Layer *> &layers)
+Network::Network(const std::vector<Layer *> &layers, std::optional<unsigned int> random_seed)
 {
-    std::srand(std::time(nullptr));
+    std::srand(random_seed.value_or(std::time(nullptr)));
     this->layers = layers;
 }
 
@@ -16,7 +16,7 @@ std::vector<Layer *> Network::getLayers()
     return layers;
 }
 
-Eigen::MatrixXd Network::forward_prop(const Eigen::MatrixXd &input)
+Eigen::VectorXd Network::forward_prop(const Eigen::VectorXd &input)
 {
     activations = std::vector<Eigen::VectorXd>();
     preactivations = std::vector<Eigen::VectorXd>();
@@ -24,15 +24,15 @@ Eigen::MatrixXd Network::forward_prop(const Eigen::MatrixXd &input)
     activations.reserve(layers.size() + 1);
     preactivations.reserve(layers.size());
 
-    Eigen::MatrixXd activation = input.transpose(); // (3, 1)
+    Eigen::VectorXd activation = input; // (3, 1)
 
     activations.push_back(activation);
 
-    for (int i = 0; i < layers.size(); i++)
+    for (std::size_t i = 0; i < layers.size(); i++)
     {
-        std::map<std::string, Eigen::MatrixXd> layer_output = layers.at(i)->forward_prop(activation);
+        std::map<std::string, Eigen::VectorXd> layer_output = layers.at(i)->forward_prop(activation);
 
-        Eigen::MatrixXd z = layer_output["preactivations"];
+        Eigen::VectorXd z = layer_output["preactivations"];
         activation = layer_output["activations"];
 
         preactivations.push_back(z);
@@ -42,7 +42,7 @@ Eigen::MatrixXd Network::forward_prop(const Eigen::MatrixXd &input)
     return activation;
 }
 
-std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> Network::back_prop(Eigen::MatrixXd y)
+std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> Network::back_prop(const Eigen::MatrixXd &y)
 {
     std::vector<Eigen::VectorXd> dz;
     std::vector<Eigen::MatrixXd> dw;
@@ -69,14 +69,14 @@ std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> Network::b
     for (int i = layers.size() - 2; i >= 0; i--)
     {
         Eigen::MatrixXd w_prev = layers.at(i + 1)->getParams()["w"];
-        Eigen::VectorXd z = preactivations.at(i);
+        Eigen::VectorXd z_current = preactivations.at(i);
         Eigen::VectorXd a_next = activations.at(i);
 
         Layer *current_layer = layers.at(i);
 
         Eigen::MatrixXd temp1 = w_prev.array().colwise() * current_dz.array();
         Eigen::MatrixXd temp2 = temp1.colwise().sum();
-        Eigen::MatrixXd temp3 = temp2.transpose().array() * activation_prime(z, current_layer->activation_function).array();
+        Eigen::MatrixXd temp3 = temp2.transpose().array() * activation_prime(z_current, current_layer->activation_function).array();
         current_dz = temp3;
         current_dw = (Eigen::MatrixXd::Ones(current_dz.size(), a_next.rows()).array().rowwise() * a_next.transpose().array()).array().colwise() * current_dz.array();
         current_db = current_dz;
@@ -96,23 +96,24 @@ std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> Network::b
     return std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>>(dw, db);
 }
 
-void Network::updateParameters(std::vector<Eigen::MatrixXd> dw, std::vector<Eigen::MatrixXd> db, double alpha, double alphaMomentum = 1)
+void Network::updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std::vector<Eigen::MatrixXd> &db, double alpha, double alphaMomentum = 0)
 {
-    for (int i = 0; i < layers.size(); i++)
+    for (std::size_t i = 0; i < layers.size(); i++)
     {
         std::vector<Neuron *> neurons = layers.at(i)->getNeurons();
 
-        for (int j = 0; j < neurons.size(); j++)
+        for (std::size_t j = 0; j < neurons.size(); j++)
         {
             Neuron *neuron = neurons.at(j);
 
             Eigen::VectorXd w = neuron->getW();
             double b = neuron->getB();
 
-            Eigen::VectorXd momentumGradient = ;
+            Network::retainedGradient["w"].at(i).row(j) = alphaMomentum * retainedGradient["w"].at(i).row(j).eval().array() + (1 - alphaMomentum) * dw.rbegin()[i].row(j).array();
+            Network::retainedGradient["b"].at(i).row(j) = alphaMomentum * retainedGradient["b"].at(i).row(j).eval().array() + (1 - alphaMomentum) * db.rbegin()[i].row(j).array();
 
-            w = w.array() + std::pow(alphaMomentum, i) * alpha * dw.rbegin()[i].row(j).transpose().array();
-            b = b + std::pow(alphaMomentum, i) * alpha * db.rbegin()[i].row(j)(0);
+            w = w.array() + alpha * Network::retainedGradient["w"].at(i).row(j).transpose().array();
+            b = b + alpha * Network::retainedGradient["b"].at(i).row(j)(0);
 
             neuron->setW(w);
             neuron->setB(b);
@@ -120,17 +121,22 @@ void Network::updateParameters(std::vector<Eigen::MatrixXd> dw, std::vector<Eige
     }
 }
 
-double Network::calc_cost(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y)
+double Network::calc_cost(const Eigen::VectorXd &x, const Eigen::VectorXd &y)
 {
-    Eigen::MatrixXd activation = forward_prop(x);
+    Eigen::VectorXd activation = forward_prop(x);
     double result = mse(activation, y.transpose());
 
     return result / y.size();
 }
 
-Eigen::VectorXd Network::train(Eigen::MatrixXd &x, Eigen::MatrixXd &y, int epochs, double alpha, double alphaMomentum = 1.0)
+Eigen::VectorXd Network::train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y, int epochs, double alpha, double alphaMomentum)
 {
-    Network::retainedGradient = Eigen::MatrixXd::Zero(layers.at(0)->getNeurons().size(), x.row(0).size());
+    for (Layer *layer : layers)
+    {
+        Network::retainedGradient["w"].push_back(Eigen::MatrixXd::Zero(layer->getParams()["w"].rows(), layer->getParams()["w"].cols()));
+        Network::retainedGradient["b"].push_back(Eigen::MatrixXd::Zero(layer->getParams()["b"].rows(), layer->getParams()["b"].cols()));
+    }
+
     Eigen::VectorXd lossCache(epochs);
 
     for (int i = 0; i < epochs; i++)

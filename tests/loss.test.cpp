@@ -1,29 +1,34 @@
 #include "catch2/catch.hpp"
 #include <Eigen/Dense>
 #include "loss.h"
+#include "utils.h"
 
 using namespace Catch::literals;
-// TEST_CASE("Mean squared error function", "[mse]")
-// {
-//   Eigen::VectorXd x(3);
-//   Eigen::VectorXd y(3);
+TEST_CASE("Mean squared error function", "[mse]")
+{
+    Eigen::VectorXd y_hat(3);
+    Eigen::VectorXd y(3);
 
-//   x << 1, 2, 3;
-//   y << 4, 5, 6;
+    y_hat << 1, 2, 3;
+    y << 6, 5, 4;
 
-//   double actual = mse(x, y);
-//   double expected = std::pow(1 - 4, 2) + std::pow(2 - 5, 2) + std::pow(3 - 6, 2);
+    double actual = mse(y_hat, y);
+    double expected = 25 + 9 + 1;
 
-//   REQUIRE(actual == Approx(expected));
-// }
+    CHECK(actual == Approx(expected));
+}
 
-// TEST_CASE("Cross entropy loss function", "[cross_entropy_loss]")
-// {
-//   double x = 0.5;
-//   double y = 0.1;
+TEST_CASE("Mean squared prime error function", "[mse_prime]")
+{
+    Eigen::VectorXd y_hat(3);
+    Eigen::VectorXd y(3);
 
-//   double actual = cross_entropy_loss(x, y);
-//   double expected = 0.6931471806;
+    y_hat << 1, 2, 3;
+    y << 6, 5, 4;
 
-//   REQUIRE(actual == Approx(expected));
-// }
+    Eigen::VectorXd actual = mse_prime(y_hat, y);
+    Eigen::VectorXd expected(3);
+    expected << 10, 6, 2;
+
+    CHECK(vectorized_equal_approx(expected, actual));
+}

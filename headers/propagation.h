@@ -6,11 +6,12 @@ enum ACTIVATION_FUNCTION
 {
     LINEAR,
     SIGMOID,
-    TANH
+    TANH,
+    RELU
 };
 
-double preactivation(Eigen::VectorXd &x, Eigen::VectorXd &w, double b);
+double preactivation(const Eigen::VectorXd &x, const Eigen::VectorXd &w, double b);
 
-Eigen::MatrixXd activation(const Eigen::MatrixXd &z, ACTIVATION_FUNCTION activation_function);
+Eigen::VectorXd activation(const Eigen::VectorXd &z, ACTIVATION_FUNCTION activation_function);
 
-Eigen::MatrixXd activation_prime(Eigen::MatrixXd z, ACTIVATION_FUNCTION activation_function);
+Eigen::VectorXd activation_prime(const Eigen::VectorXd &z, ACTIVATION_FUNCTION activation_function);

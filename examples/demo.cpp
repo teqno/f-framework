@@ -10,7 +10,7 @@
 
 #include "gnuplot-iostream.h"
 
-int testPlot(Eigen::MatrixXd x, Eigen::MatrixXd y, int yMin, int yMax)
+int testPlot(Eigen::MatrixXd x, Eigen::MatrixXd y, double yMin, double yMax)
 {
     std::vector<std::pair<double, double>> data;
     for (int i = 0; i < x.rows(); i++)
@@ -34,12 +34,12 @@ int main()
 {
     // Each training example contains 1 feature
     // There are 10 training examples in total
-    Eigen::MatrixXd x(500, 1);
-    x << Eigen::VectorXd::LinSpaced(500, 1, 10);
+    Eigen::MatrixXd x(50, 1);
+    x << Eigen::VectorXd::LinSpaced(50, 1, 10);
 
     // Each element is expected value of the output of the neural network
     // for the corresponding training example
-    Eigen::MatrixXd y(500, 1);
+    Eigen::MatrixXd y(50, 1);
     y << x.array().sin();
 
     double xNormCoef = x.maxCoeff();
@@ -51,36 +51,39 @@ int main()
 #define NET_TEST
 #ifdef NET_TEST
 
-    Layer *l1 = new Layer(30, 1, ACTIVATION_FUNCTION::TANH);
-    Layer *l2 = new Layer(30, 30, ACTIVATION_FUNCTION::TANH);
-    Layer *l3 = new Layer(30, 30, ACTIVATION_FUNCTION::TANH);
-    Layer *l4 = new Layer(30, 30, ACTIVATION_FUNCTION::TANH);
-    Layer *l5 = new Layer(1, 30, ACTIVATION_FUNCTION::LINEAR);
-    
-    std::vector<Layer *> layers = {l1, l2, l3, l4, l5};
+    Layer *l1 = new Layer(1, 1, ACTIVATION_FUNCTION::TANH);
+    Layer *l2 = new Layer(2, 1, ACTIVATION_FUNCTION::TANH);
+    Layer *l3 = new Layer(1, 2, ACTIVATION_FUNCTION::LINEAR);
 
-    Network *nn = new Network(layers);
+    std::vector<Layer *> layers = {l1, l2, l3};
 
-    int EPOCHS = 10;
+    Network *nn = new Network(layers, 1);
 
-    Eigen::VectorXd lossCache = nn->train(xNorm, yNorm, EPOCHS, 0.001, 1.7);
+    int EPOCHS = 2000;
+
+    Eigen::VectorXd lossCache = nn->train(xNorm, yNorm, EPOCHS, 0.05, 0);
+
+    Eigen::MatrixXd xTest(10, 1);
+    xTest << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
+    Eigen::MatrixXd xTestNorm = xTest / xTest.maxCoeff();
 
     Eigen::MatrixXd results(y.rows(), y.cols());
-    for (int i = 0; i < xNorm.rows(); i++) {
+    for (int i = 0; i < xTestNorm.rows(); i++)
+    {
         Eigen::VectorXd result = nn->forward_prop(xNorm.row(i));
         results.row(i) = result;
     }
 
-    std::cout << results << '\n';
+    std::cout << results * yNormCoef << '\n';
 
-    testPlot(x, results * yNormCoef, -1, 1);
+    testPlot(xNorm * xNormCoef, results * yNormCoef, 0.0, y.maxCoeff());
 
-    testPlot(x, y, -1, 1);
+    testPlot(x, y, 0.0, y.maxCoeff());
 
     Eigen::MatrixXd epochsX(EPOCHS, 1);
     epochsX << Eigen::VectorXd::LinSpaced(EPOCHS, 1, EPOCHS);
 
-    testPlot(epochsX, lossCache, lossCache.minCoeff(), lossCache.maxCoeff());
+    testPlot(epochsX, lossCache, 0.0, lossCache.maxCoeff());
 
 #endif
 

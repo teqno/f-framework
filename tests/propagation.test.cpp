@@ -1,50 +1,77 @@
 #include "catch2/catch.hpp"
 #include <Eigen/Dense>
 #include "propagation.h"
+#include "utils.h"
 
 using namespace Catch::literals;
 TEST_CASE("Preactivation function", "[preactivation]")
 {
-  Eigen::VectorXd x(3);
-  Eigen::VectorXd w(3);
+    Eigen::VectorXd x(3);
+    Eigen::VectorXd w(3);
 
-  x << 1, 2, 3;
-  w << 4, 5, 6;
+    x << 1, 2, 3;
+    w << 4, 5, 6;
 
+    double b = 7;
 
-  double b = 7;
+    double actual = preactivation(x, w, b);
+    double expected = 1 * 4 + 2 * 5 + 3 * 6 + 7;
 
-  double actual = preactivation(x, w, b);
-  double expected = 1 * 4 + 2 * 5 + 3 * 6 + 7;
-
-  REQUIRE(actual == expected);
+    CHECK(actual == expected);
 }
 
 TEST_CASE("Activation function", "[activation]")
 {
-  double a = 0.5;
+    Eigen::VectorXd z(3);
+    z << -10, 0, 10;
 
-  // SECTION("Linear")
-  // {
-  //   double actual = activation(a, ACTIVATION_FUNCTION::LINEAR);
-  //   double expected = a;
+    SECTION("Linear")
+    {
+        Eigen::VectorXd actual = activation(z, ACTIVATION_FUNCTION::LINEAR);
+        Eigen::VectorXd expected(3);
+        expected << -10, 0, 10;
 
-  //   REQUIRE(actual == expected);
-  // }
+        INFO("Actual: " << actual);
+        INFO("Expected: " << expected);
 
-  // SECTION("Sigmoid")
-  // {
-  //   double actual = activation(a, ACTIVATION_FUNCTION::SIGMOID);
-  //   Catch::Detail::Approx expected = 0.3775406688_a;
+        CHECK(vectorized_equal_approx(actual, expected));
+    }
 
-  //   REQUIRE(actual == expected);
-  // }
+    SECTION("Sigmoid")
+    {
+        Eigen::VectorXd actual = activation(z, ACTIVATION_FUNCTION::SIGMOID);
+        Eigen::VectorXd expected(3);
+        expected << 0.00005, 0.5, 0.99995;
 
-  // SECTION("Sigmoid")
-  // {
-  //   double actual = activation(a, ACTIVATION_FUNCTION::TANH);
-  //   Catch::Detail::Approx expected = 0.4621171572_a;
+        INFO("Epsilon: " << std::numeric_limits<float>::epsilon() * 1000);
+        INFO("Actual: " << actual);
+        INFO("Expected: " << expected);
 
-  //   REQUIRE(actual == expected);
-  // }
+        CHECK(vectorized_equal_approx(actual, expected));
+    }
+
+    SECTION("Tanh")
+    {
+        Eigen::VectorXd actual = activation(z, ACTIVATION_FUNCTION::TANH);
+        Eigen::VectorXd expected(3);
+        expected << -0.99999999587, 0, 0.99999999587;
+
+        INFO("Epsilon: " << std::numeric_limits<float>::epsilon() * 1000);
+        INFO("Actual: " << actual);
+        INFO("Expected: " << expected);
+
+        CHECK(vectorized_equal_approx(actual, expected));
+    }
+
+    SECTION("Relu")
+    {
+        Eigen::VectorXd actual = activation(z, ACTIVATION_FUNCTION::RELU);
+        Eigen::VectorXd expected(3);
+        expected << 0, 0, 10;
+
+        INFO("Actual: " << actual);
+        INFO("Expected: " << expected);
+
+        CHECK(vectorized_equal_approx(actual, expected));
+    }
 }

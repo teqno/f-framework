@@ -2,10 +2,12 @@
 
 #include "Eigen/Dense"
 
-double sigmoid(double a);
+Eigen::VectorXd sigmoid(const Eigen::VectorXd &z);
 
-Eigen::MatrixXd sigmoid(Eigen::MatrixXd a);
+Eigen::VectorXd relu(const Eigen::VectorXd &z);
 
-Eigen::MatrixXd sigmoid_prime(Eigen::MatrixXd z);
+Eigen::VectorXd sigmoid_prime(const Eigen::VectorXd &z);
 
-Eigen::MatrixXd tanh_prime(Eigen::MatrixXd z);
+Eigen::VectorXd tanh_prime(const Eigen::VectorXd &z);
+
+Eigen::VectorXd relu_prime(const Eigen::VectorXd &z);

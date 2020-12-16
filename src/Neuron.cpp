@@ -8,30 +8,27 @@
 
 #include "Neuron.h"
 #include "activations.h"
-#include "random.h"
-
-// static std::default_random_engine generator = initialize_random_seed();
 
 Neuron::Neuron(int input_size)
 {
-    parameters.w = Eigen::VectorXd(input_size);
+    Neuron::parameters.w = Eigen::VectorXd(input_size);
 
     // std::normal_distribution<double> distribution(0, 1);
     for (int i = 0; i < input_size; i++)
     {
         // parameters.w(i) = distribution(generator);
-        parameters.w(i) = ((double)std::rand()) / RAND_MAX;
+        Neuron::parameters.w(i) = ((double)std::rand()) / RAND_MAX;
     }
 
-    parameters.b = 0;
+    Neuron::parameters.b = 0;
 }
 
-HyperParameters Neuron::getParameters() { return parameters; }
+HyperParameters Neuron::getParameters() { return Neuron::parameters; }
 
-Eigen::VectorXd Neuron::getW() { return parameters.w; }
+Eigen::VectorXd Neuron::getW() { return Neuron::parameters.w; }
 
-void Neuron::setW(Eigen::VectorXd w) { parameters.w = w; }
+void Neuron::setW(const Eigen::VectorXd &w) { Neuron::parameters.w = w; }
 
-double Neuron::getB() { return parameters.b; }
+double Neuron::getB() { return Neuron::parameters.b; }
 
-void Neuron::setB(double b) { parameters.b = b; }
+void Neuron::setB(double b) { Neuron::parameters.b = b; }

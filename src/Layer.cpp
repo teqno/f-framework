@@ -14,7 +14,7 @@ Layer::Layer(int layer_size, int input_size, ACTIVATION_FUNCTION activation_func
     }
 }
 
-std::map<std::string, Eigen::MatrixXd> Layer::forward_prop(Eigen::MatrixXd &x)
+std::map<std::string, Eigen::VectorXd> Layer::forward_prop(const Eigen::VectorXd &x)
 {
     Eigen::MatrixXd w = getParams()["w"];
     Eigen::VectorXd b = getParams()["b"];
@@ -22,11 +22,11 @@ std::map<std::string, Eigen::MatrixXd> Layer::forward_prop(Eigen::MatrixXd &x)
     // std::cout << w << "-------------W\n";
     // std::cout << b << "-------------B\n";
 
-    Eigen::MatrixXd preactivations = (w * x).colwise() + b;
+    Eigen::VectorXd preactivations = (w * x).array() + b.array();
 
     // std::cout << preactivations << "-------------Preactivations\n";
 
-    Eigen::MatrixXd activations =  activation(preactivations, activation_function);
+    Eigen::VectorXd activations = activation(preactivations, activation_function);
 
     // std::cout << activations << "-------------Activations\n";
 
@@ -38,7 +38,7 @@ std::map<std::string, Eigen::MatrixXd> Layer::getParams()
     Eigen::MatrixXd w(neurons.size(), neurons.at(0)->getW().size());
     Eigen::VectorXd b(neurons.size());
 
-    for (int i = 0; i < neurons.size(); i++)
+    for (std::size_t i = 0; i < neurons.size(); i++)
     {
         HyperParameters parameters = neurons.at(i)->getParameters();
         w.row(i) = parameters.w;

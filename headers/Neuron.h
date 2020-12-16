@@ -5,7 +5,6 @@
 #include "HyperParameters.h"
 #include "Eigen/Dense"
 
-
 class Neuron
 {
 private:
@@ -15,7 +14,7 @@ public:
     Neuron(int input_size);
     HyperParameters getParameters();
     Eigen::VectorXd getW();
-    void setW(Eigen::VectorXd newW);
+    void setW(const Eigen::VectorXd &newW);
     double getB();
     void setB(double newB);
 };

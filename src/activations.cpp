@@ -1,23 +1,36 @@
 #include <math.h>
+#include <iostream>
 
 #include "activations.h"
 
-double sigmoid(double a)
+Eigen::VectorXd sigmoid(const Eigen::VectorXd &z)
 {
-    return 1.0 / (1.0 + exp(a));
+    return z.array() / (1.0 + z.array().abs());
 }
 
-Eigen::MatrixXd sigmoid(Eigen::MatrixXd a)
+Eigen::VectorXd relu(const Eigen::VectorXd &z)
 {
-    return 1.0 / (1.0 + a.array().exp());
+    return z.cwiseMax(0);
 }
 
-Eigen::MatrixXd sigmoid_prime(Eigen::MatrixXd z)
+Eigen::VectorXd sigmoid_prime(const Eigen::VectorXd &z)
 {
-    return sigmoid(z).array() * (Eigen::MatrixXd::Ones(z.rows(), z.cols()).array() - sigmoid(z).array());
+    return 1.0 / (z.array().abs() + 1.0).pow(2);
 }
 
-Eigen::MatrixXd tanh_prime(Eigen::MatrixXd z)
+Eigen::VectorXd tanh_prime(const Eigen::VectorXd &z)
 {
-    return 1.0 - z.array().tanh().pow(2);
+    return 1.0 / z.array().cosh().pow(2);
+}
+
+Eigen::VectorXd relu_prime(const Eigen::VectorXd &z)
+{
+    Eigen::VectorXd updatedZ(z.size());
+
+    for (int i = 0; i < z.size(); i++)
+    {
+        updatedZ(i) = z(i) > 0 ? 1 : 0;
+    }
+
+    return updatedZ;
 }

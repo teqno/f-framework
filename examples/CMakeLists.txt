@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
-option(Boost_DEBUG "Set to ON to enable debug output from FindBoost." ON)
-option(Boost_DETAILED_FAILURE_MSG "Set to ON to get detailed information" ON)
+option(Boost_DEBUG "Set to ON to enable debug output from FindBoost." OFF)
+option(Boost_DETAILED_FAILURE_MSG "Set to ON to get detailed information" OFF)
 
 set(Boost_NO_SYSTEM_PATHS ON)
 set(Boost_USE_STATIC_LIBS TRUE)
@@ -13,11 +13,7 @@ set(BOOST_ROOT ${PROJECT_SOURCE_DIR}/libs/boost)
 set(BOOST_LIBRARYDIR ${PROJECT_SOURCE_DIR}/libs/boost/stage/lib)
 set(BOOST_INCLUDEDIR ${PROJECT_SOURCE_DIR}/libs/boost)
 
-message("BOOST_ROOT is ${BOOST_ROOT}")
-
 find_package(Boost REQUIRED COMPONENTS filesystem system iostreams)
-
-message("BOOST_LIBS is ${Boost_LIBRARIES}")
 
 add_executable(demo demo.cpp)
 
@@ -29,5 +25,3 @@ target_include_directories(demo
     PRIVATE ${PROJECT_SOURCE_DIR}/libs/gnuplot-iostream
     PRIVATE ${Boost_INCLUDE_DIR}
 )
-
-message("LIBS ${Boost_LIBRARIES}")
