@@ -91,7 +91,8 @@
     "core": "cpp",
     "any": "cpp",
     "csetjmp": "cpp",
-    "scoped_allocator": "cpp"
+    "scoped_allocator": "cpp",
+    "geometry": "cpp"
   },
   "cSpell.words": [
     "Eigen"

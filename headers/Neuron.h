@@ -2,17 +2,17 @@
 
 #include <map>
 #include "propagation.h"
-#include "HyperParameters.h"
+#include "DataTypes.h"
 #include "Eigen/Dense"
 
 class Neuron
 {
 private:
-    HyperParameters parameters;
+    DataTypes::NeuronHyperParameters parameters;
 
 public:
     Neuron(int input_size);
-    HyperParameters getParameters();
+    DataTypes::NeuronHyperParameters getParameters();
     Eigen::VectorXd getW();
     void setW(const Eigen::VectorXd &newW);
     double getB();

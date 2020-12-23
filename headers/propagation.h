@@ -10,7 +10,7 @@ enum ACTIVATION_FUNCTION
     RELU
 };
 
-double preactivation(const Eigen::VectorXd &x, const Eigen::VectorXd &w, double b);
+Eigen::VectorXd preactivation(const Eigen::MatrixXd &w, const Eigen::VectorXd &activations, const Eigen::VectorXd &b);
 
 Eigen::VectorXd activation(const Eigen::VectorXd &z, ACTIVATION_FUNCTION activation_function);
 

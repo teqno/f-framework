@@ -10,12 +10,12 @@
 
 #include "gnuplot-iostream.h"
 
-int testPlot(Eigen::MatrixXd x, Eigen::MatrixXd y, double yMin, double yMax)
+int testPlot(Eigen::VectorXd x, Eigen::VectorXd y, double yMin, double yMax)
 {
     std::vector<std::pair<double, double>> data;
     for (int i = 0; i < x.rows(); i++)
     {
-        data.emplace_back(x.row(i)(0), y.row(i)(0));
+        data.emplace_back(x(i), y(i));
     }
 
     double xMin = x.minCoeff();
@@ -25,7 +25,7 @@ int testPlot(Eigen::MatrixXd x, Eigen::MatrixXd y, double yMin, double yMax)
 
     Gnuplot gp;
     gp << "set xrange [" << xMin << ":" << xMax << "]\nset yrange [" << yMin << ":" << yMax << "]\n";
-    gp << "plot sin(x) tit 'sin(x)', '-' tit 'data'\n";
+    gp << "plot '-' tit 'data'\n";
     gp.send1d(data);
     return 0;
 }
@@ -40,7 +40,7 @@ int main()
     // Each element is expected value of the output of the neural network
     // for the corresponding training example
     Eigen::MatrixXd y(50, 1);
-    y << x.array().sin();
+    y << x.array() * 3 + 10;
 
     double xNormCoef = x.maxCoeff();
     double yNormCoef = y.maxCoeff();
@@ -61,17 +61,13 @@ int main()
 
     int EPOCHS = 2000;
 
-    Eigen::VectorXd lossCache = nn->train(xNorm, yNorm, EPOCHS, 0.05, 0);
-
-    Eigen::MatrixXd xTest(10, 1);
-    xTest << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
-    Eigen::MatrixXd xTestNorm = xTest / xTest.maxCoeff();
+    Eigen::VectorXd lossCache = nn->train(xNorm, yNorm, EPOCHS, 0.001);
 
     Eigen::MatrixXd results(y.rows(), y.cols());
-    for (int i = 0; i < xTestNorm.rows(); i++)
+
+    for (int i = 0; i < xNorm.rows(); i++)
     {
-        Eigen::VectorXd result = nn->forward_prop(xNorm.row(i));
-        results.row(i) = result;
+        results.row(i) = nn->forward_prop(xNorm.row(i));
     }
 
     std::cout << results * yNormCoef << '\n';

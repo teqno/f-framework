@@ -2,7 +2,6 @@
 
 #include "Layer.h"
 #include "loss.h"
-#include "Cache.h"
 #include <optional>
 #include <functional>
 
@@ -10,8 +9,7 @@ class Network
 {
 private:
     std::vector<Layer *> layers;
-    std::vector<Eigen::VectorXd> activations;
-    std::vector<Eigen::VectorXd> preactivations;
+    DataTypes::NetworkCache cache;
     std::map<std::string, std::vector<Eigen::MatrixXd>> retainedGradient;
 
 public:
@@ -21,11 +19,11 @@ public:
 
     Eigen::VectorXd forward_prop(const Eigen::VectorXd &input);
 
-    std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> back_prop(const Eigen::MatrixXd &y);
+    DataTypes::Deltas back_prop(const Eigen::VectorXd &y);
 
-    void updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std::vector<Eigen::MatrixXd> &db, double alpha, double alphaMomentum);
+    void updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std::vector<Eigen::VectorXd> &db, double alpha);
 
     double calc_cost(const Eigen::VectorXd &x, const Eigen::VectorXd &y);
 
-    Eigen::VectorXd train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y, int epochs, double alpha, double alphaMomentum = 0);
+    Eigen::VectorXd train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y, int epochs, double alpha);
 };

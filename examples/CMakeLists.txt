@@ -19,6 +19,8 @@ add_executable(demo demo.cpp)
 
 set_property(TARGET demo PROPERTY CXX_STANDARD 17)
 
+target_compile_options(demo PRIVATE -Werror -Wall -Wextra)
+
 target_link_libraries(demo f-framework-lib ${Boost_LIBRARIES})
 
 target_include_directories(demo
