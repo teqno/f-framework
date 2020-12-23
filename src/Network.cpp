@@ -73,9 +73,14 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
 
         Layer *current_layer = layers.at(i);
 
-        if (((std::size_t) i) == layers.size() - 1)
+        Eigen::VectorXd a_next = this->cache.activations.at(i);
+
+        if (((std::size_t)i) == layers.size() - 1)
         {
-            current_dw = Eigen::MatrixXd::Zero(current_layer->getParams().w.rows(), current_layer->getParams().w.cols()); // TODO:
+            Eigen::MatrixXd current_dz_m = current_dz.matrix();
+            Eigen::MatrixXd a_next_m = a_next.matrix();
+
+            current_dw = current_dz_m * a_next_m.transpose();
             current_db = current_dz;
         }
         else
@@ -87,9 +92,10 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
 
             current_dz = (w_prev.transpose() * current_dz).array() * activation_prime(z_current, current_layer->activation_function).array();
 
-            Eigen::VectorXd a_next = this->cache.activations.at(i);
+            Eigen::MatrixXd current_dz_m = current_dz.matrix();
+            Eigen::MatrixXd a_next_m = a_next.matrix();
 
-            current_dw = Eigen::MatrixXd::Zero(current_layer->getParams().w.rows(), current_layer->getParams().w.cols()); // TODO:
+            current_dw = current_dz_m * a_next_m.transpose();
             current_db = current_dz;
 
             // std::cout << temp1 << "--------------dZ1\n";

@@ -29,7 +29,7 @@ Eigen::VectorXd relu_prime(const Eigen::VectorXd &z)
 
     for (int i = 0; i < z.size(); i++)
     {
-        updatedZ(i) = z(i) > 0 ? 1 : 0;
+        updatedZ(i) = z(i) > 0 ? 1.0 : 0.0;
     }
 
     return updatedZ;

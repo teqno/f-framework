@@ -34,16 +34,14 @@ int main()
 {
     // Each training example contains 1 feature
     // There are 10 training examples in total
-    Eigen::MatrixXd x(50, 1);
-    x << Eigen::VectorXd::LinSpaced(50, 1, 10);
+    Eigen::MatrixXd x = Eigen::VectorXd::LinSpaced(50, 1, 10);
 
     // Each element is expected value of the output of the neural network
     // for the corresponding training example
-    Eigen::MatrixXd y(50, 1);
-    y << x.array() * 3 + 10;
+    Eigen::MatrixXd y = x.array() * 30;
 
-    double xNormCoef = x.maxCoeff();
-    double yNormCoef = y.maxCoeff();
+    double xNormCoef = x.array().maxCoeff();
+    double yNormCoef = y.array().maxCoeff();
 
     Eigen::MatrixXd xNorm = x.array() / xNormCoef;
     Eigen::MatrixXd yNorm = y.array() / yNormCoef;
@@ -51,28 +49,28 @@ int main()
 #define NET_TEST
 #ifdef NET_TEST
 
-    Layer *l1 = new Layer(1, 1, ACTIVATION_FUNCTION::TANH);
-    Layer *l2 = new Layer(2, 1, ACTIVATION_FUNCTION::TANH);
-    Layer *l3 = new Layer(1, 2, ACTIVATION_FUNCTION::LINEAR);
+    Layer *l1 = new Layer(20, 1, ACTIVATION_FUNCTION::SIGMOID);
+    Layer *l4 = new Layer(1, 20, ACTIVATION_FUNCTION::LINEAR);
 
-    std::vector<Layer *> layers = {l1, l2, l3};
+    std::vector<Layer *> layers = {l1, l4};
 
     Network *nn = new Network(layers, 1);
 
-    int EPOCHS = 2000;
+    int EPOCHS = 5000;
 
-    Eigen::VectorXd lossCache = nn->train(xNorm, yNorm, EPOCHS, 0.001);
+    Eigen::VectorXd lossCache = nn->train(x, yNorm, EPOCHS, 0.00001);
 
     Eigen::MatrixXd results(y.rows(), y.cols());
 
     for (int i = 0; i < xNorm.rows(); i++)
     {
-        results.row(i) = nn->forward_prop(xNorm.row(i));
+        results.row(i) = nn->forward_prop(x.row(i));
     }
 
-    std::cout << results * yNormCoef << '\n';
+    std::cout << "xNormCoef: " << xNormCoef << '\n';
+    std::cout << "yNormCoef: " << yNormCoef << '\n';
 
-    testPlot(xNorm * xNormCoef, results * yNormCoef, 0.0, y.maxCoeff());
+    testPlot(x, results * yNormCoef, 0.0, y.maxCoeff());
 
     testPlot(x, y, 0.0, y.maxCoeff());
 
