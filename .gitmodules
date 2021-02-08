@@ -1,0 +1,3 @@
+[submodule "f-library/external/eigen"]
+	path = f-library/external/eigen
+	url = https://gitlab.com/libeigen/eigen.git
