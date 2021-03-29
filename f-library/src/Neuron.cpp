@@ -15,7 +15,7 @@ Neuron::Neuron(int input_size)
 
     for (int i = 0; i < input_size; i++)
     {
-        Neuron::parameters.w(i) = ((double)std::rand()) / RAND_MAX;
+        Neuron::parameters.w(i) = ((double)std::rand()) / RAND_MAX * std::sqrt(2.0 / input_size);
     }
 
     Neuron::parameters.b = 0;

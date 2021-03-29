@@ -21,9 +21,6 @@
     <ClCompile Include="src\backpropagation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Layer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -72,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\FLibCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

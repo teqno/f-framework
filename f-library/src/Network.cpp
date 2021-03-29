@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include "debug.h"
 
 Network::Network(const std::vector<Layer *> &layers, std::optional<unsigned int> random_seed)
 {
@@ -12,9 +13,6 @@ Network::Network(const std::vector<Layer *> &layers, std::optional<unsigned int>
     std::srand(random_seed.value_or(std::time(nullptr)));
 
     this->layers = layers;
-
-    this->cache.activations = std::vector<Eigen::VectorXd>();
-    this->cache.preactivations = std::vector<Eigen::VectorXd>();
 }
 
 std::vector<Layer *> Network::getLayers()
@@ -24,12 +22,12 @@ std::vector<Layer *> Network::getLayers()
 
 Eigen::VectorXd Network::forward_prop(const Eigen::VectorXd &input)
 {
-    this->cache.preactivations.reserve(layers.size());
-    this->cache.activations.reserve(layers.size() + 1);
+    // this->cache.preactivations.reserve(layers.size());
+    // this->cache.activations.reserve(layers.size() + 1);
 
     Eigen::VectorXd layerActivations = input;
 
-    this->cache.activations.push_back(layerActivations);
+    cache.activations.push_back(layerActivations);
 
     for (std::size_t i = 0; i < layers.size(); i++)
     {
@@ -40,6 +38,18 @@ Eigen::VectorXd Network::forward_prop(const Eigen::VectorXd &input)
 
         this->cache.preactivations.push_back(layerPreactivations);
         this->cache.activations.push_back(layerActivations);
+
+        debug("Network::forward_prop > layer " + std::to_string(i) + " weights");
+        debug(layers.at(i)->getParams().w);
+
+        debug("Network::forward_prop > layer " + std::to_string(i) + " biases");
+        debug(layers.at(i)->getParams().b);
+
+        debug("Network::forward_prop > layer " + std::to_string(i) + " preactivations");
+        debug(layerPreactivations);
+
+        debug("Network::forward_prop > layer " + std::to_string(i) + " activations");
+        debug(layerActivations);
     }
 
     return layerActivations;
@@ -47,6 +57,9 @@ Eigen::VectorXd Network::forward_prop(const Eigen::VectorXd &input)
 
 DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
 {
+    debug("Network::back_prop > y");
+    debug(y);
+
     std::vector<Eigen::MatrixXd> dw;
     std::vector<Eigen::VectorXd> db;
 
@@ -54,7 +67,15 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
     db.reserve(layers.size());
 
     Eigen::VectorXd current_da = mse_prime(this->cache.activations.back(), y);
+
+    debug("Network::back_prop > current_da last");
+    debug(current_da);
+
     Eigen::VectorXd current_dz = current_da.array() * activation_prime(this->cache.preactivations.back(), layers.back()->activation_function).array();
+    
+    debug("Network::back_prop > current_dz last");
+    debug(current_dz);
+    
     // Eigen::MatrixXd current_dw = (Eigen::MatrixXd::Ones(current_dz.size(), this->cache.activations.rbegin()[1].transpose().size()).array().colwise() * current_dz.array()).array() * (Eigen::MatrixXd::Ones(current_dz.size(), this->cache.activations.rbegin()[1].transpose().size()).array().rowwise() * this->cache.activations.rbegin()[1].transpose().array()).array();
     // Eigen::VectorXd current_db = current_dz;
 
@@ -75,6 +96,9 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
 
         Eigen::VectorXd a_next = this->cache.activations.at(i);
 
+        debug("Network::back_prop > a_next for layer " + std::to_string(i));
+        debug(a_next);
+
         if (((std::size_t)i) == layers.size() - 1)
         {
             Eigen::MatrixXd current_dz_m = current_dz.matrix();
@@ -85,7 +109,7 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
         }
         else
         {
-            Layer *prev_layer = layers.at(i + 1);
+            Layer *prev_layer = layers.at((int)i + 1);
 
             Eigen::MatrixXd w_prev = prev_layer->getParams().w;
             Eigen::VectorXd z_current = this->cache.preactivations.at(i);
@@ -143,8 +167,21 @@ void Network::updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std
 
 double Network::calc_cost(const Eigen::VectorXd &x, const Eigen::VectorXd &y)
 {
+    debug("Network::calc_cost > x");
+    debug(x);
+
+    debug("Network::calc_cost > y");
+    debug(y);
+
     Eigen::VectorXd activations = forward_prop(x);
+
+    debug("Network::calc_cost > activations");
+    debug(activations);
+
     double result = mse(activations, y);
+
+    debug("Network::calc_cost > mse");
+    debug(result);
 
     return result / y.size();
 }
@@ -156,6 +193,18 @@ Eigen::VectorXd Network::train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &
     //     Network::retainedGradient["w"].push_back(Eigen::MatrixXd::Zero(layer->getParams()["w"].rows(), layer->getParams()["w"].cols()));
     //     Network::retainedGradient["b"].push_back(Eigen::MatrixXd::Zero(layer->getParams()["b"].rows(), layer->getParams()["b"].cols()));
     // }
+
+    debug("Network::train > x");
+    debug(x);
+
+    debug("Network::train > y");
+    debug(y);
+
+    debug("Network::train > epochs");
+    debug(epochs);
+
+    debug("Network::train > alpha");
+    debug(alpha);
 
     Eigen::VectorXd lossCache(epochs);
 
@@ -169,6 +218,8 @@ Eigen::VectorXd Network::train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &
             // forward_prop(x.row(j));
             DataTypes::Deltas deltas = back_prop(y.row(j));
             updateParameters(deltas.dw, deltas.db, alpha);
+            cache.activations.clear();
+            cache.preactivations.clear();
         }
 
         lossCache(i) = cost;
@@ -179,7 +230,7 @@ Eigen::VectorXd Network::train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &
         }
     }
 
-    std::cout << "Epoch " << epochs << ": " << lossCache(epochs - 1) << std::endl;
+    std::cout << "Epoch " << epochs << ": " << lossCache((int)epochs - 1) << std::endl;
 
     return lossCache;
 }
