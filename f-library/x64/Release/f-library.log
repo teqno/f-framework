@@ -1,0 +1,10 @@
+﻿  activations.cpp
+  backpropagation.cpp
+  Layer.cpp
+  loss.cpp
+  Network.cpp
+C:\Users\cliff\Documents\Work\Thesis\f-framework\f-library\src\Network.cpp(69,39): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  Neuron.cpp
+  propagation.cpp
+  utils.cpp
+  f-library.vcxproj -> C:\Users\cliff\Documents\Work\Thesis\f-framework\x64\Release\f-library.lib
