@@ -8,11 +8,11 @@
 class Neuron
 {
 private:
-    DataTypes::NeuronHyperParameters parameters;
+    DataTypes::NeuronParameters parameters;
 
 public:
     Neuron(int input_size);
-    DataTypes::NeuronHyperParameters getParameters();
+    DataTypes::NeuronParameters getParameters();
     Eigen::VectorXd getW();
     void setW(const Eigen::VectorXd &newW);
     double getB();

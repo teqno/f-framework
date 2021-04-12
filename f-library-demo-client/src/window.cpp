@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <tchar.h>
+#include <functional>
 #include "window.h"
 
 static TCHAR szWindowClass[] = _T("FLib Demo");
@@ -12,7 +13,82 @@ int buffer_height;
 void* buffer_memory;
 BITMAPINFO buffer_bitmap_info;
 
-void init_window(HINSTANCE hInstance, void (*action)()) {
+int state = 0;
+
+void clearBuffer() {
+	void* buffer_memory = get_buffer_memory_ref();
+	int buffer_height = get_buffer_height();
+	int buffer_width = get_buffer_width();
+
+	unsigned int* pixel = (unsigned int*)buffer_memory;
+	for (int y = 0; y < buffer_height; y++) {
+		for (int x = 0; x < buffer_width; x++) {
+			*pixel = 0xffffff;
+			pixel++;
+		}
+	}
+
+	display_buffer();
+}
+
+void action(Eigen::VectorXd data1, Eigen::VectorXd data2) {
+	void* buffer_memory = get_buffer_memory_ref();
+	int buffer_height = get_buffer_height();
+	int buffer_width = get_buffer_width();
+	double coef_x = (double)data1.size() / buffer_width;
+	double coef_y = (data1.maxCoeff() - data1.minCoeff()) / buffer_height;
+
+	Eigen::VectorXd biased_y = data1.array() - data1.minCoeff();
+
+	unsigned int* pixel = (unsigned int*)buffer_memory;
+	for (int y = 0; y < buffer_height; y++) {
+		for (int x = 0; x < buffer_width; x++) {
+			int coeffed_x = coef_x * x;
+
+			if (coeffed_x < biased_y.size() && y - (int)(biased_y(coeffed_x) / coef_y + 2) < 0 && y - (int)(biased_y(coeffed_x) / coef_y - 2) > 0) {
+				*pixel = 0xff0000;
+			}
+			else {
+				*pixel = 0xffffff;
+			}
+			pixel++;
+		}
+	}
+
+	biased_y = data2.array() - data1.minCoeff(); // biased relative to data1
+
+	pixel = (unsigned int*)buffer_memory;
+	for (int y = 0; y < buffer_height; y++) {
+		for (int x = 0; x < buffer_width; x++) {
+			int coeffed_x = coef_x * x;
+
+			if (coeffed_x < biased_y.size() && y - (int)(biased_y(coeffed_x) / coef_y + 2) < 0 && y - (int)(biased_y(coeffed_x) / coef_y - 2) > 0) {
+				*pixel = 0x00ff00;
+			}
+			pixel++;
+		}
+	}
+
+	display_buffer();
+}
+
+void displayState(Eigen::VectorXd data1, Eigen::VectorXd data2, Eigen::VectorXd data3) {
+	switch (state)
+	{
+		case 0: {
+			action(data1, data2);
+			break;
+		}
+		case 1: {
+			action(data3, Eigen::VectorXd());
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+void init_window(HINSTANCE hInstance, Eigen::VectorXd data1, Eigen::VectorXd data2, Eigen::VectorXd data3, int width, int height) {
 	WNDCLASS window_class = {};
 	window_class.style = CS_HREDRAW | CS_VREDRAW;
 	window_class.lpszClassName = szWindowClass;
@@ -22,7 +98,7 @@ void init_window(HINSTANCE hInstance, void (*action)()) {
 
 	HWND hwnd =
 		CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT,
-			CW_USEDEFAULT, 1000, 700, NULL, NULL, hInstance, NULL);
+			CW_USEDEFAULT, width, height, NULL, NULL, hInstance, NULL);
 	hdc = GetDC(hwnd);
 
 	while (isRunning) {
@@ -32,8 +108,7 @@ void init_window(HINSTANCE hInstance, void (*action)()) {
 			DispatchMessage(&msg);
 		}
 
-		action();
-		Sleep(16.666);
+		displayState(data1, data2, data3);
 	}
 }
 
@@ -42,6 +117,27 @@ LRESULT CALLBACK window_callback(HWND hwnd, UINT message, WPARAM wParam,
 	TCHAR greeting[] = _T("Hello, Windows desktop!");
 
 	switch (message) {
+		case WM_KEYDOWN: {
+			switch (wParam)
+			{
+				case VK_RETURN: {
+					if (state == 0) {
+						state = 1;
+					}
+					else {
+						state = 0;
+					}
+					break;
+				}
+				case VK_ESCAPE: {
+					isRunning = false;
+					break;
+				}
+				default:
+					break;
+			}
+			break;
+		}
 		case WM_SIZE: {
 			RECT rect;
 			GetClientRect(hwnd, &rect);

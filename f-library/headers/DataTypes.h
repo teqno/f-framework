@@ -6,13 +6,13 @@
 
 namespace DataTypes
 {
-    struct NeuronHyperParameters
+    struct NeuronParameters
     {
         Eigen::VectorXd w;
         double b;
     };
 
-    struct LayerHyperParameters
+    struct LayerParameters
     {
         Eigen::MatrixXd w;
         Eigen::VectorXd b;

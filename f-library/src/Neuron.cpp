@@ -21,7 +21,7 @@ Neuron::Neuron(int input_size)
     Neuron::parameters.b = 0;
 }
 
-DataTypes::NeuronHyperParameters Neuron::getParameters() { return Neuron::parameters; }
+DataTypes::NeuronParameters Neuron::getParameters() { return Neuron::parameters; }
 
 Eigen::VectorXd Neuron::getW() { return Neuron::parameters.w; }
 

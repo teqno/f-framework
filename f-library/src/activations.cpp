@@ -10,7 +10,14 @@ Eigen::VectorXd sigmoid(const Eigen::VectorXd &z)
 
 Eigen::VectorXd relu(const Eigen::VectorXd &z)
 {
-    return z.cwiseMax(0);
+    Eigen::VectorXd updatedZ(z.size());
+
+    for (int i = 0; i < z.size(); i++)
+    {
+        updatedZ(i) = z(i) > 0 ? z(i) : -0.1 * z(i);
+    }
+
+    return updatedZ;
 }
 
 Eigen::VectorXd sigmoid_prime(const Eigen::VectorXd &z)
@@ -29,7 +36,7 @@ Eigen::VectorXd relu_prime(const Eigen::VectorXd &z)
 
     for (int i = 0; i < z.size(); i++)
     {
-        updatedZ(i) = z(i) > 0 ? 1.0 : 0.0;
+        updatedZ(i) = z(i) > 0 ? 1.0 : -0.1;
     }
 
     return updatedZ;

@@ -22,8 +22,8 @@ std::vector<Layer *> Network::getLayers()
 
 Eigen::VectorXd Network::forward_prop(const Eigen::VectorXd &input)
 {
-    // this->cache.preactivations.reserve(layers.size());
-    // this->cache.activations.reserve(layers.size() + 1);
+    this->cache.preactivations.reserve(layers.size());
+    this->cache.activations.reserve(layers.size() + 1);
 
     Eigen::VectorXd layerActivations = input;
 
@@ -75,17 +75,6 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
     
     debug("Network::back_prop > current_dz last");
     debug(current_dz);
-    
-    // Eigen::MatrixXd current_dw = (Eigen::MatrixXd::Ones(current_dz.size(), this->cache.activations.rbegin()[1].transpose().size()).array().colwise() * current_dz.array()).array() * (Eigen::MatrixXd::Ones(current_dz.size(), this->cache.activations.rbegin()[1].transpose().size()).array().rowwise() * this->cache.activations.rbegin()[1].transpose().array()).array();
-    // Eigen::VectorXd current_db = current_dz;
-
-    // // std::cout << current_da << "--------------dA\n";
-    // // std::cout << current_dz << "--------------dZ\n";
-    // // std::cout << current_dw << "--------------dW\n";
-    // // std::cout << current_db << "--------------dB\n";
-
-    // dw.push_back(current_dw);
-    // db.push_back(current_db);
 
     for (int i = layers.size() - 1; i >= 0; i--)
     {
@@ -121,13 +110,6 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
 
             current_dw = current_dz_m * a_next_m.transpose();
             current_db = current_dz;
-
-            // std::cout << temp1 << "--------------dZ1\n";
-            // std::cout << temp2 << "--------------dZ2\n";
-            // std::cout << temp3 << "--------------dZ3\n";
-            // std::cout << current_dz << "--------------dZ\n";
-            // std::cout << current_dw << "--------------dW\n";
-            // std::cout << current_db << "--------------dB\n";
         }
 
         dw.push_back(current_dw);
@@ -137,8 +119,11 @@ DataTypes::Deltas Network::back_prop(const Eigen::VectorXd &y)
     return {.dw = dw, .db = db};
 }
 
-void Network::updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std::vector<Eigen::VectorXd> &db, double alpha)
+void Network::updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std::vector<Eigen::VectorXd> &db, double alpha, std::optional<DataTypes::Deltas> prev_deltas, std::optional<double> momentum)
 {
+    Eigen::MatrixXd delta_w;
+    double delta_b;
+
     for (std::size_t i = 0; i < layers.size(); i++)
     {
         std::vector<Neuron *> neurons = layers.at(i)->getNeurons();
@@ -150,14 +135,16 @@ void Network::updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std
             Eigen::VectorXd w = neuron->getW();
             double b = neuron->getB();
 
-            // Network::retainedGradient["w"].at(i).row(j) = alphaMomentum * retainedGradient["w"].at(i).row(j).eval().array() + (1 - alphaMomentum) * dw.rbegin()[i].row(j).array();
-            // Network::retainedGradient["b"].at(i).row(j) = alphaMomentum * retainedGradient["b"].at(i).row(j).eval().array() + (1 - alphaMomentum) * db.rbegin()[i].row(j).array();
+            delta_w = dw.at(layers.size() - 1 - i).row(j).transpose().array();
+            delta_b = db.at(layers.size() - 1 - i)(j);
 
-            // w = w.array() + alpha * Network::retainedGradient["w"].at(i).row(j).transpose().array();
-            // b = b + alpha * Network::retainedGradient["b"].at(i).row(j)(0);
+            if (prev_deltas.has_value() && momentum.has_value()) {
+                delta_w = delta_w.array() + momentum.value() * prev_deltas.value().dw.at(layers.size() - 1 - i).row(j).transpose().array();
+                delta_b = delta_b + momentum.value() * prev_deltas.value().db.at(layers.size() - 1 - i)(j);
+            }
 
-            w = w.array() + alpha * dw.at(layers.size() - 1 - i).row(j).transpose().array();
-            b = b + alpha * db.at(layers.size() - 1 - i)(j);
+            w = w.array() + alpha * delta_w.array();
+            b = b + alpha * delta_b;
 
             neuron->setW(w);
             neuron->setB(b);
@@ -186,14 +173,8 @@ double Network::calc_cost(const Eigen::VectorXd &x, const Eigen::VectorXd &y)
     return result / y.size();
 }
 
-Eigen::VectorXd Network::train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y, int epochs, double alpha)
+Eigen::VectorXd Network::train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y, int epochs, double alpha, double momentum)
 {
-    // for (Layer *layer : layers)
-    // {
-    //     Network::retainedGradient["w"].push_back(Eigen::MatrixXd::Zero(layer->getParams()["w"].rows(), layer->getParams()["w"].cols()));
-    //     Network::retainedGradient["b"].push_back(Eigen::MatrixXd::Zero(layer->getParams()["b"].rows(), layer->getParams()["b"].cols()));
-    // }
-
     debug("Network::train > x");
     debug(x);
 
@@ -211,20 +192,32 @@ Eigen::VectorXd Network::train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &
     for (int i = 0; i < epochs; i++)
     {
         double cost = 0;
+        DataTypes::Deltas deltas;
+
+        DataTypes::Deltas prev_deltas;
 
         for (int j = 0; j < x.rows(); j++)
         {
             cost += calc_cost(x.row(j), y.row(j));
-            // forward_prop(x.row(j));
-            DataTypes::Deltas deltas = back_prop(y.row(j));
-            updateParameters(deltas.dw, deltas.db, alpha);
+            
+            DataTypes::Deltas current_deltas = back_prop(y.row(j));
+            
+            if (j == 0) {
+                updateParameters(current_deltas.dw, current_deltas.db, alpha, std::nullopt, std::nullopt);
+            }
+            else {
+                updateParameters(current_deltas.dw, current_deltas.db, alpha, prev_deltas, momentum);
+            }
+
+            prev_deltas = current_deltas;
+
             cache.activations.clear();
             cache.preactivations.clear();
         }
 
         lossCache(i) = cost;
 
-        if (i % 1000 == 0)
+        if (i % (epochs / 20) == 0 || epochs < 20)
         {
             std::cout << "Epoch " << i + 1 << ": " << cost << std::endl;
         }

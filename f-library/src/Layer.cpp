@@ -33,7 +33,7 @@ Layer::Layer(int layer_size, int input_size, ACTIVATION_FUNCTION activation_func
  */
 DataTypes::LayerCacheResult Layer::forward_prop(const Eigen::VectorXd &activations)
 {
-    DataTypes::LayerHyperParameters layerParams = this->getParams();
+    DataTypes::LayerParameters layerParams = this->getParams();
     Eigen::MatrixXd w = layerParams.w;
     Eigen::VectorXd b = layerParams.b;
 
@@ -58,14 +58,14 @@ DataTypes::LayerCacheResult Layer::forward_prop(const Eigen::VectorXd &activatio
  * | * |
  * | * |
  */
-DataTypes::LayerHyperParameters Layer::getParams()
+DataTypes::LayerParameters Layer::getParams()
 {
     Eigen::MatrixXd w(neurons.size(), neurons.at(0)->getW().size());
     Eigen::VectorXd b(neurons.size());
 
     for (std::size_t i = 0; i < neurons.size(); i++)
     {
-        DataTypes::NeuronHyperParameters parameters = neurons.at(i)->getParameters();
+        DataTypes::NeuronParameters parameters = neurons.at(i)->getParameters();
         w.row(i) = parameters.w;
         b(i) = parameters.b;
     }

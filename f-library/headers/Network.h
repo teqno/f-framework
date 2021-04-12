@@ -10,7 +10,6 @@ class Network
 private:
     std::vector<Layer *> layers;
     DataTypes::NetworkCache cache;
-    std::map<std::string, std::vector<Eigen::MatrixXd>> retainedGradient;
 
 public:
     Network(const std::vector<Layer *> &layers, std::optional<unsigned int> random_seed = std::nullopt);
@@ -21,9 +20,9 @@ public:
 
     DataTypes::Deltas back_prop(const Eigen::VectorXd &y);
 
-    void updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std::vector<Eigen::VectorXd> &db, double alpha);
+    void updateParameters(const std::vector<Eigen::MatrixXd> &dw, const std::vector<Eigen::VectorXd> &db, double alpha, std::optional<DataTypes::Deltas> prev_deltas, std::optional<double> momentum);
 
     double calc_cost(const Eigen::VectorXd &x, const Eigen::VectorXd &y);
 
-    Eigen::VectorXd train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y, int epochs, double alpha);
+    Eigen::VectorXd train(const Eigen::MatrixXd &x, const Eigen::MatrixXd &y, int epochs, double alpha, double momentum);
 };

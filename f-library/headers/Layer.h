@@ -13,7 +13,7 @@ public:
     ACTIVATION_FUNCTION activation_function;
     Layer(int layer_size, int input_size, ACTIVATION_FUNCTION activation_function);
     DataTypes::LayerCacheResult forward_prop(const Eigen::VectorXd &x);
-    DataTypes::LayerHyperParameters getParams();
+    DataTypes::LayerParameters getParams();
     std::vector<Neuron *> getNeurons();
     void setWeights(Eigen::MatrixXd weights);
 };
